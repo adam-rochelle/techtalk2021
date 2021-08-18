@@ -61,4 +61,4 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
-          script: sudo microk8s kubectl set image deployment.apps/hello my-ecr-repo=${{ steps.login-ecr.outputs.registry }}/my-ecr-repo:${{ github.sha }} --namespace kube-system
+          script: sudo $(sudo aws ecr get-login --region us-east-1 --no-include-email) && sudo microk8s kubectl set image deployment.apps/hello my-ecr-repo=${{ steps.login-ecr.outputs.registry }}/my-ecr-repo:${{ github.sha }} --namespace kube-system
