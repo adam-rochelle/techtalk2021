@@ -5,7 +5,7 @@ on:
 name: Deploy to Amazon ECR
 
 jobs:
-  deploy:
+  build:
     name: Deploy
     runs-on: ubuntu-latest
     environment: production
@@ -38,3 +38,15 @@ jobs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+  delpoy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: update microk8s cluster
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          script: sudo microk8s kubectl set image deployment.apps/hello my-ecr-repo=${{ secrets.AWS_REPO }}:${{ github.sha }} --namespace kube-system
